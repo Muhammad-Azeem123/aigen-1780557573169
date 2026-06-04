@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Response in UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #0056b3;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #plainTextResponse, #jsonApiResponse {
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            white-space: pre-wrap; /* Preserves whitespace and line breaks */
+            word-break: break-all;
+            min-height: 50px;
+            box-sizing: border-box;
+        }
+        #jsonApiResponse ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #jsonApiResponse ul li {
+            padding: 5px 0;
+            border-bottom: 1px dotted #d1d1d1;
+        }
+        #jsonApiResponse ul li:last-child {
+            border-bottom: none;
+        }
+        #jsonApiResponse ul li strong {
+            color: #333;
+            display: inline-block;
+            width: 120px; /* Align keys */
+        }
+        .json-nested {
+            margin-left: 20px;
+            border-left: 2px solid #ccc;
+            padding-left: 10px;
+            margin-top: 5px;
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Displaying Responses in the UI</h1>
+        <p>Click the buttons below to see different types of responses displayed.</p>
+
+        <hr>
+
+        <h2>Plain Text Response</h2>
+        <button id="showTextButton">Show Simple Text Response</button>
+        <div id="plainTextResponse">
+            <!-- Plain text response will be displayed here -->
+            <p style="color:#666;">Click the button to load a plain text response.</p>
+        </div>
+
+        <hr>
+
+        <h2>JSON API Response</h2>
+        <button id="showJsonButton">Show JSON Data Response</button>
+        <div id="jsonApiResponse">
+            <!-- JSON API response will be displayed here -->
+            <p style="color:#666;">Click the button to load and parse a JSON API response.</p>
+        </div>
+    </div>
+
+    <script>
+        // Get references to the HTML elements
+        const showTextButton = document.getElementById('showTextButton');
+        const plainTextResponseDiv = document.getElementById('plainTextResponse');
+        const showJsonButton = document.getElementById('showJsonButton');
+        const jsonApiResponseDiv = document.getElementById('jsonApiResponse');
+
+        /**
+         * Simulates fetching a plain text response and displays it.
+         */
+        function showPlainTextResponse() {
+            // Simulate a server response or a fixed text message
+            const responseText = "Hello from the server! This is a simple message to demonstrate displaying plain text in the UI.\n\n" +
+                                 "It can include multiple lines and special characters.";
+
+            // Update the content of the div
+            plainTextResponseDiv.textContent = responseText;
+            plainTextResponseDiv.style.backgroundColor = '#d4edda'; // Light green for success
+            plainTextResponseDiv.style.borderColor = '#28a745';
+        }
+
+        /**
+         * Simulates fetching a JSON API response and displays it in a structured way.
+         */
+        function showJsonApiResponse() {
+            // Simulate a JSON response object (as if fetched from an API)
+            const apiResponse = {
+                status: "success",
+                code: 200,
+                message: "User profile data fetched successfully!",
+                data: {
+                    id: "user-12345",
+                    username: "dev_agent_007",
+                    email: "agent@example.com",
+                    isActive: true,
+                    roles: ["admin", "developer", "tester"],
+                    lastLogin: "2023-10-27T10:30:00Z",
+                    settings: {
+                        theme: "dark",
+                        notifications: {
+                            email: true,
+                            push: false
+                        }
+                    }
+                },
+                timestamp: new Date().toISOString()
+            };
+
+            // Clear previous content
+            jsonApiResponseDiv.innerHTML = '';
+            jsonApiResponseDiv.style.backgroundColor = '#d1ecf1'; // Light blue for info
+            jsonApiResponseDiv.style.borderColor = '#17a2b8';
+
+            // Function to recursively display JSON data
+            function displayJson(data, parentElement) {
+                if (typeof data !== 'object' || data === null) {
+                    parentElement.textContent = String(data);
+                    return;
+                }
+
+                if (Array.isArray(data)) {
+                    const ul = document.createElement('ul');
+                    ul.className = 'json-nested';
+                    parentElement.appendChild(ul);
+                    data.forEach((item, index) => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>[${index}]</strong>: `;
+                        displayJson(item, li);
+                        ul.appendChild(li);
+                    });
+                } else { // It's an object
+                    const ul = document.createElement('ul');
+                    ul.className = parentElement === jsonApiResponseDiv ? '' : 'json-nested';
+                    parentElement.appendChild(ul);
+                    for (const key in data) {
+                        if (Object.prototype.hasOwnProperty.call(data, key)) {
+                            const li = document.createElement('li');
+                            const strong = document.createElement('strong');
+                            strong.textContent = key + ':';
+                            li.appendChild(strong);
+
+                            if (typeof data[key] === 'object' && data[key] !== null) {
+                                displayJson(data[key], li);
+                            } else {
+                                const spanValue = document.createElement('span');
+                                spanValue.textContent = String(data[key]);
+                                li.appendChild(spanValue);
+                            }
+                            ul.appendChild(li);
+                        }
+                    }
+                }
+            }
+
+            // Start displaying the JSON response
+            displayJson(apiResponse, jsonApiResponseDiv);
+        }
+
+        // Attach event listeners to the buttons
+        showTextButton.addEventListener('click', showPlainTextResponse);
+        showJsonButton.addEventListener('click', showJsonApiResponse);
+
+        // Optional: Load a default response when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+             // You can uncomment one of these to show a response by default
+             // showPlainTextResponse();
+             // showJsonApiResponse();
+        });
+    </script>
+
+</body>
+</html>
